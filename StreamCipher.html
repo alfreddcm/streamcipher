@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task #3 Stream Cipher</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous" />
+</head>
+<style>
+    body{
+        background-color: antiquewhite;
+        margin: 30px;
+    }
+    td {
+  height: 50px;
+  vertical-align: top;
+
+
+}
+textarea:disabled {
+    color: rgb(0, 0, 0);
+        opacity: 1; /* Set opacity to 1 to make it visible */
+        pointer-events: pointer; /* Enable pointer events so it can be interacted with */
+        background-color: #ffffff; /* Optionally, change background color to indicate it's disabled */
+    }
+
+</style>
+
+<body>
+    <header>
+
+    </header>
+    <main>
+
+
+<div class="row justify-content-center align-items-center g-2">
+    <div class="col justify-content-center">
+        <div class="card text-right">
+            <div class="card-body">
+                <h4 class="card-title">Encryption</h4>
+                <p class="card-text">
+                        <form id="conversionForm">
+                            <div class="table">
+                                <table class="table table-primary">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Input</th>
+                                            <th scope="col">Binary</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr style="width: fit-content;">
+                                            <td scope="row">
+                                                plaintext <br>
+                                                <input type="text" id="plaintext">
+                                            </td>
+                                            <td>
+                                                <textarea name="" id="binarytext" cols="50" rows="2" disabled></textarea>
+                                                <b id=""></b>
+                                            </td>
+                                        </tr>
+                                        <tr class="">
+                                            <td scope="row">
+                                                key <br>
+                                                <input type="text" id="key">
+                                            </td>
+
+                                            <td>
+                                                <textarea name="" id="binarykey0" cols="50" rows="2" disabled></textarea>
+                                                <p id="errorMessage" style="color: red; display: none;">Second input cannot be longer than the first input.</p>
+
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <b id="binarykey" style="color: rgba(240, 248, 255, 0); position: absolute;"></b>
+
+                            </div>
+                        </form>
+            
+
+                                    
+                    Encrypted text&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp;
+                    <textarea name="" id="encryptednum" cols="50" rows="1" disabled></textarea>
+                     <b id=""></b> <br>
+                     ASCII printable binary to text
+                     <textarea name="" id="encryptedText" cols="50" rows="1" disabled></textarea>
+                     <b id=""></b>
+                </p>
+            </div>
+        </div>
+        
+    </div>
+
+    <div class="col">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Decryption</h4>
+                <p class="card-text">
+                    <div class="card w-50">
+                        <div class="card-body">
+                            <h4 class="card-title">Decryption</h4>
+                            <form action="">
+                                <p class="card-text">Encrypted Text (in binary)</p>
+                                <input type="text" id="binaryInput" name="binaryInput" pattern="[01]" min="0" max="1" title="Please enter either 0 or 1." required>
+                                <span id="errorMessage2" style="color: red; display: none;">Please enter either 0 or 1.</span>
+            
+                                <p class="card-text">Key (in plain text)</p>
+                                <input type="text" id="decryptkey"><br>
+                                <b>Decrypted text:</b>
+                                <b id="decText"></b>
+                            </form>
+                        </div>
+                    </div>
+                </p>
+            </div>
+        </div>
+        
+    </div>
+
+</div>
+
+<div class="row justify-content-center align-items-center g-2">
+
+
+</div>
+
+    </main>
+    
+    <footer>
+    </footer>
+
+    <!-- Bootstrap JavaScript Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
+        integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
+        crossorigin="anonymous"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"
+        integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+"
+        crossorigin="anonymous"></script>
+
+    <script>
+        let bplain = '';
+        let bkey = '';
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const plaintext = document.getElementById('plaintext');
+            const key = document.getElementById('key');
+            const errorMessage = document.getElementById('errorMessage');
+
+            plaintext.addEventListener('input', function () {
+                const binaryString = textToBinary(plaintext.value);
+                document.getElementById('binarytext').innerText = binaryString;
+                bplain = binaryString;
+            });
+
+            key.addEventListener('input', function () {
+                if (key.value.length > plaintext.value.length) {
+                    errorMessage.style.display = 'block';
+                } else if (key.value.length < plaintext.value.length) {
+                    errorMessage.style.display = 'none';
+                    const key0 = textToBinary(key.value);
+                    document.getElementById('binarykey0').innerText = key0;
+
+
+                    if (key.value.length > 0) {
+                        let repeatedKey = '';
+                        while (repeatedKey.length < plaintext.value.length) {
+                            repeatedKey += key.value;
+                        }
+                        const key1 = repeatedKey.substring(0, plaintext.value.length);
+                        const binaryKey = textToBinary(key1);
+                        bkey = binaryKey;
+                        document.getElementById('binarykey').innerText = binaryKey;
+                    }
+                } else {
+                    errorMessage.style.display = 'none';
+                    const binaryKey = textToBinary(key.value);
+                    bkey = binaryKey;
+                    document.getElementById('binarykey0').innerText = binaryKey;
+                }
+
+
+                const encryptedBinary = xorBinaryStrings(bplain, bkey);
+                const encryptedtext = binaryToText(encryptedBinary);
+
+                document.getElementById('encryptednum').innerText = encryptedBinary;
+                document.getElementById('encryptedText').innerText = encryptedtext;
+            });
+
+        });
+
+
+        function textToBinary(text) {
+            return text.split('').map(char => {
+                const binary = char.charCodeAt(0).toString(2);
+                const paddedBinary = '0'.repeat(8 - binary.length) + binary;
+                return paddedBinary;
+            }).join('');
+        }
+
+        function binaryToText(input) {
+            let output = '';
+            for (let i = 0; i < input.length; i += 8) {
+                const byte = input.substr(i, 8); // Get the next 8 bits
+                const charCode = parseInt(byte, 2); // Convert binary to decimal
+                if (charCode >= 32 && charCode <= 126) {
+                    output += String.fromCharCode(charCode); // Convert decimal to character
+                } else {
+                    output += '*'; // Replace non-printable characters with space
+                }
+            }
+            return output;
+        }
+
+        function xorBinaryStrings(binary1, binary2) {
+            const length = Math.max(binary1.length, binary2.length);
+            let result = '';
+            for (let i = 0; i < length; i++) {
+                const bit1 = parseInt(binary1[i] || '0');
+                const bit2 = parseInt(binary2[i] || '0');
+                result += (bit1 ^ bit2).toString();
+            }
+            return result;
+        }
+
+
+
+        let enctext = '';
+        let key2 = '';
+
+        document.getElementById('binaryInput').addEventListener('input', function (event) {
+            var inputValue = event.target.value;
+            var errorMessage = document.getElementById('errorMessage2');
+
+            if (!/^[01]*$/.test(inputValue)) {
+                errorMessage.style.display = 'inline';
+            } else if (inputValue.length % 8 !== 0) {
+                errorMessage.textContent = 'Binary string must be 8-bits and must be 1 and 0 , .';
+                errorMessage.style.display = 'inline';
+            } else {
+                errorMessage.style.display = 'none';
+                enctext = inputValue;
+            }
+        });
+
+
+        document.getElementById('decryptkey').addEventListener('input', function (event) {
+            const regex = /[01]{8}/g;
+            const matches = enctext.match(regex);
+            const count = matches ? matches.length : 0;
+
+            if (event.target.value.length === 0 || count === 0) {
+                document.getElementById('decText').innerText = ''; // Clear decrypted text if the key or encrypted text is empty
+                return;
+            }
+
+            let repeatedKey = '';
+            while (repeatedKey.length < count) {
+                repeatedKey += event.target.value; // Use event.target.value instead of enctext.value
+            }
+            const key2 = repeatedKey.substring(0, count);
+            const key2binary = textToBinary(key2)
+
+            const result2 = xorBinaryStrings(enctext, key2binary);
+            const result2text = binaryToText(result2);
+
+            document.getElementById('decText').innerText = result2text;
+
+        });
+
+
+
+    </script>
+</body>
+
+</html>
